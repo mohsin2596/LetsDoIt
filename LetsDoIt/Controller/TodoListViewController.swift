@@ -12,18 +12,14 @@ class TodoListViewController: UITableViewController {
 
     var itemArray = [Item]()
     
-    let defaults = UserDefaults.standard
+    let directoryPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
-        let newItem = Item(itemTitle: "First item", itemDone: false)
-        itemArray.append(newItem)
+        loadItems()
         
-//        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
-//            itemArray = items
-//        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -51,6 +47,8 @@ class TodoListViewController: UITableViewController {
         
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
+        saveItem()
+        
         tableView.deselectRow(at: indexPath, animated: true)
         tableView.reloadData()
     }
@@ -68,8 +66,8 @@ class TodoListViewController: UITableViewController {
                 let newItem = Item(itemTitle: itemString, itemDone: false)
                 
                 self.itemArray.append(newItem)
-                //self.defaults.set(self.itemArray, forKey: "TodoListArray")
-                self.tableView.reloadData()
+                
+                self.saveItem()
                 
             }
             
@@ -85,5 +83,34 @@ class TodoListViewController: UITableViewController {
         present(alert, animated: true, completion: nil)
     }
     
+    func saveItem() {
+        let encoder = PropertyListEncoder()
+        
+        do {
+            let data = try encoder.encode(itemArray)
+            try data.write(to: directoryPath!)
+        }
+        catch {
+            print("Error encoding items array")
+        }
+        
+        tableView.reloadData()
+    }
+    
+    func loadItems() {
+        if let data = try? Data(contentsOf: directoryPath!) {
+        
+            let decoder = PropertyListDecoder()
+            
+            do {
+                itemArray = try decoder.decode([Item].self, from: data)
+                
+            }
+            catch {
+                print("Error decoding item array")
+            }
+    }
+    
 }
 
+}
