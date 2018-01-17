@@ -12,9 +12,15 @@ class TodoListViewController: UITableViewController {
 
     var itemArray = ["First Item","Second Item","Third Item"]
     
+    let defaults = UserDefaults.standard
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        
+        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
+            itemArray = items
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -34,7 +40,7 @@ class TodoListViewController: UITableViewController {
         return cell
     }
 
-    //MARK - TableView Delegate Methods
+    //MARK: - TableView Delegate Methods
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         print(itemArray[indexPath.row])
         
@@ -49,7 +55,7 @@ class TodoListViewController: UITableViewController {
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
-    //MARK - Add button function
+    //MARK: - Add button function
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         
         var gTextField = UITextField()
@@ -60,6 +66,7 @@ class TodoListViewController: UITableViewController {
             
             if let itemString = gTextField.text, !gTextField.text!.isEmpty {
                 self.itemArray.append(itemString)
+                self.defaults.set(self.itemArray, forKey: "TodoListArray")
                 self.tableView.reloadData()
                 
             }
