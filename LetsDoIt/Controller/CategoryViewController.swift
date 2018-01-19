@@ -8,8 +8,11 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
-class CategoryViewController: UITableViewController {
+class CategoryViewController: SwipeTableViewController {
+    
+    
 
     let realm = try! Realm()
     
@@ -18,7 +21,7 @@ class CategoryViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-       
+
         loadCategories()
     }
 
@@ -28,9 +31,18 @@ class CategoryViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "categoryCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         cell.textLabel?.text = categoryArray?[indexPath.row].name ?? "No category added"
+        
+        if let colorHex = categoryArray?[indexPath.row].color {
+            cell.backgroundColor = UIColor.init(hexString: colorHex)
+        }
+        else {
+            cell.backgroundColor = UIColor.randomFlat()
+        }
+        
+        cell.textLabel?.textColor = UIColor(contrastingBlackOrWhiteColorOn:cell.backgroundColor, isFlat:true)
         
         return cell
     }
@@ -64,6 +76,7 @@ class CategoryViewController: UITableViewController {
                 
                 let newCategory = Category()
                 newCategory.name = categoryName
+                newCategory.color = UIColor.randomFlat().hexValue()
                 self.saveCategory(category: newCategory)
                 
                 
@@ -75,6 +88,8 @@ class CategoryViewController: UITableViewController {
         present(alert, animated: true, completion: nil)
         
     }
+    
+    
     
     //MARK: - Data retrieval methods
     func saveCategory(category: Category){
@@ -95,4 +110,21 @@ class CategoryViewController: UITableViewController {
         
         tableView.reloadData()
     }
+    
+    override func updateModel(at indexPath: IndexPath){
+        if let deleteCategory = self.categoryArray?[indexPath.row] {
+            do {
+                try self.realm.write {
+                    self.realm.delete(deleteCategory)
+                }
+            }
+            catch {
+                print("Error deleting: \(error)")
+            }
+
+        }
+    }
+    
 }
+
+
